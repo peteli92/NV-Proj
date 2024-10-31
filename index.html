@@ -247,8 +247,8 @@
         <h1>Nevada Early Voting Statistics</h1>
     </div>
 
-    <h2 style="text-align: center; margin: 20px 0 10px; font-size: 24px; font-weight: 700;"> </h2>
-    <h3 style="text-align: center; margin: 0 0 20px; font-size: 20px; font-weight: 600;"> </h3>
+<h2 style="text-align: center; margin: 20px 0 10px; font-size: 24px; font-weight: 700;">Nevada</h2>
+<h3 style="text-align: center; margin: 0 0 20px; font-size: 20px; font-weight: 600;">Nevada</h3>
 
     <div class="stats-grid">
         <div class="stat-card">
@@ -583,40 +583,41 @@
         }
         
         function populateTable() {
-                const tbody = document.getElementById('county-tbody');
-                tbody.innerHTML = '';
-            
-                counties.forEach(county => {
-                    const data = countyData[county];
-                    const percentages = calculatePercentages(data);
-                    const total = data.democratic + data.republican + data.other;
-            
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="county-cell">${county}</td>
-                        <td class="dem-cell"><input type="number" value="${data.democratic}" 
-                            onchange="updateCountyData('${county}', 'democratic', this.value)"></td>
-                        <td class="dem-cell percentage">${percentages.democratic.toFixed(1)}%</td>
-                        <td class="rep-cell"><input type="number" value="${data.republican}"
-                            onchange="updateCountyData('${county}', 'republican', this.value)"></td>
-                        <td class="rep-cell percentage">${percentages.republican.toFixed(1)}%</td>
-                        <td class="other-cell"><input type="number" value="${data.other}"
-                            onchange="updateCountyData('${county}', 'other', this.value)"></td>
-                        <td class="other-cell percentage">${percentages.other.toFixed(1)}%</td>
-                        <td class="total-cell">${total.toLocaleString()}</td>
-                        <td class="total-cell"><input type="number" value="${data.activeVoters}"
-                            onchange="updateCountyData('${county}', 'activeVoters', this.value)"></td>
-                        <td class="total-cell">${percentages.turnout.toFixed(1)}%</td>
-                        <td class="county-cell">${county}</td>
-                    `;
-                    tbody.appendChild(row);
-            }
-    
+            const tbody = document.getElementById('county-tbody');
+            tbody.innerHTML = '';
+        
+            counties.forEach(county => {
+                const data = countyData[county];
+                const percentages = calculatePercentages(data);
+                const total = data.democratic + data.republican + data.other;
+        
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="county-cell">${county}</td>
+                    <td class="dem-cell"><input type="number" value="${data.democratic}" 
+                        onchange="updateCountyData('${county}', 'democratic', this.value)"></td>
+                    <td class="dem-cell percentage">${percentages.democratic.toFixed(1)}%</td>
+                    <td class="rep-cell"><input type="number" value="${data.republican}"
+                        onchange="updateCountyData('${county}', 'republican', this.value)"></td>
+                    <td class="rep-cell percentage">${percentages.republican.toFixed(1)}%</td>
+                    <td class="other-cell"><input type="number" value="${data.other}"
+                        onchange="updateCountyData('${county}', 'other', this.value)"></td>
+                    <td class="other-cell percentage">${percentages.other.toFixed(1)}%</td>
+                    <td class="total-cell">${total.toLocaleString()}</td>
+                    <td class="total-cell"><input type="number" value="${data.activeVoters}"
+                        onchange="updateCountyData('${county}', 'activeVoters', this.value)"></td>
+                    <td class="total-cell">${percentages.turnout.toFixed(1)}%</td>
+                    <td class="county-cell">${county}</td>
+                `;
+                tbody.appendChild(row);
+            });  // Added missing closing bracket and parenthesis
+        }
+        
         function updateCountyData(county, field, value) {
             countyData[county][field] = Math.max(0, Number(value));
             updateDisplay();
         }
-      
+        
         function initializeData() {
             counties.forEach(county => {
                 countyData[county] = {
