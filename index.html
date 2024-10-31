@@ -46,15 +46,16 @@
 
         /* Stats Grid - Left side */
         .stats-grid {
-          display: flex;
-          flex-direction: column;
-          width: 25%;
-          gap: 15px;
-          float: left;
-          height: 750px;
-          padding: 0 20px;  /* Changed from 20px to match original */
-          box-sizing: border-box;
-      }
+            margin-top: 20px;  /* Add this line to lower the cards */
+            display: flex;
+            flex-direction: column;
+            width: 25%;
+            gap: 15px;
+            float: left;
+            height: 750px;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
       
       .stat-card {
           background: white;
@@ -242,6 +243,88 @@
     </div>
 
     <script>
+
+        // Add this GeoJSON data at the top of your script
+        const nevadaCounties = {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": { "name": "Clark" },
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[-114.7, 35.8], [-114.7, 36.8], [-115.9, 36.8], [-115.9, 35.8], [-114.7, 35.8]]]
+              }
+            },
+            // Add other counties similarly...
+          ]
+        };
+        
+        function initializeMap() {
+            const width = document.querySelector('.map-box').clientWidth;
+            const height = document.querySelector('.map-box').clientHeight;
+        
+            // Clear previous map
+            d3.select("#nevada-map").html("");
+        
+            // Create SVG
+            const svg = d3.select("#nevada-map")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height]);
+        
+            // Project map
+            const projection = d3.geoAlbers()
+                .rotate([117, 0])
+                .center([0, 39])
+                .scale(width * 5)
+                .translate([width / 2, height / 2]);
+        
+            const path = d3.geoPath().projection(projection);
+        
+            // Draw counties
+            svg.selectAll("path")
+                .data(nevadaCounties.features)
+                .enter()
+                .append("path")
+                .attr("d", path)
+                .attr("class", "county")
+                .attr("fill", d => getCountyColor(d.properties.name))
+                .attr("stroke", "#FFFFFF")
+                .attr("stroke-width", 0.8);
+        }
+        
+        function getCountyColor(countyName) {
+            const county = countyData[countyName];
+            if (!county) return '#E8E8E8';
+        
+            const demVotes = county.democratic;
+            const repVotes = county.republican;
+            
+            if (demVotes === 0 && repVotes === 0) return '#E8E8E8';
+            
+            const margin = Math.abs(demVotes - repVotes) / (demVotes + repVotes);
+            const intensity = Math.min(margin / 0.1, 1); // 10% margin for full intensity
+            
+            if (demVotes > repVotes) {
+                return d3.interpolateRgb('#FFFFFF', '#2889FF')(intensity);
+            } else {
+                return d3.interpolateRgb('#FFFFFF', '#D1495B')(intensity);
+            }
+        }
+        
+        // Update the updateMap function
+        function updateMap() {
+            const mapDiv = document.getElementById('nevada-map');
+            if (!mapDiv) return;
+        
+            const paths = d3.selectAll('.county');
+            paths.transition()
+                .duration(500)
+                .attr("fill", d => getCountyColor(d.properties.name));
+        }
+        
         const counties = [
             'Carson City', 'Churchill', 'Clark', 'Douglas', 'Elko', 'Esmeralda',
             'Eureka', 'Humboldt', 'Lander', 'Lincoln', 'Lyon', 'Mineral',
