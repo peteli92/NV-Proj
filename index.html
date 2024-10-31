@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -44,8 +43,17 @@
             padding: 15px 20px;
         }
 
+        .title-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 18px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
         .stats-grid {
-            margin-top: 60px;
+            margin-top: 20px;
             display: flex;
             flex-direction: column;
             width: 25%;
@@ -154,25 +162,6 @@
             width: 100%;
         }
 
-        .county-tooltip .dem-stat { color: #2889FF; }
-        .county-tooltip .rep-stat { color: #D1495B; }
-        .county-tooltip .other-stat { color: #63B893; }
-        .county-tooltip .total-stat { color: #028090; }
-
-        .chart-container {
-            clear: both;
-            width: 100%;
-            max-width: 1160px;
-            margin: 30px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            height: auto;
-            min-height: 400px;
-            box-sizing: border-box;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -183,7 +172,7 @@
             padding: 8px;
             text-align: left;
             border: 0.5px solid #e1e4e8;
-            width: 9%;  /* Even spacing for columns */
+            width: 9%;
         }
 
         th {
@@ -192,7 +181,6 @@
             color: #F2F7F2;
         }
 
-        /* Color schemes */
         .total-color { color: #028090; }
         .dem-color { color: #2889FF; }
         .rep-color { color: #D1495B; }
@@ -251,14 +239,6 @@
                 float: none;
                 margin-top: 20px;
             }
-
-            .chart-container {
-                height: auto;
-            }
-
-            #partyBreakdown, #countyBreakdown {
-                max-height: 400px !important;
-            }
         }
     </style>
 </head>
@@ -266,6 +246,9 @@
     <div class="top-bar">
         <h1>Nevada Early Voting Statistics</h1>
     </div>
+
+    <input type="text" class="title-input" placeholder="Enter title line 1">
+    <input type="text" class="title-input" placeholder="Enter title line 2">
 
     <div class="stats-grid">
         <div class="stat-card">
@@ -294,14 +277,6 @@
         <div id="nevada-map" class="map-container"></div>
     </div>
 
-    <div class="chart-container">
-        <canvas id="partyBreakdown"></canvas>
-    </div>
-
-    <div class="chart-container">
-        <canvas id="countyBreakdown"></canvas>
-    </div>
-
     <div class="data-grid">
         <table id="county-data">
             <thead>
@@ -327,363 +302,257 @@
     <div id="county-tooltip" class="county-tooltip"></div>
     
 <script>
-    const nevadaCounties = {
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "properties": { "name": "Churchill" },
-                "geometry": {
-                    "coordinates": [[[-119.35,39.81],[-118.89,39.81],[-117.93,39.81],[-117.93,40.42],[-118.89,40.42],[-119.35,40.42],[-119.35,39.81]]],
-                    "type": "Polygon"
+        // County data and map definitions
+        const nevadaCounties = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Churchill" },
+                    "geometry": {
+                        "coordinates": [[[-119.35,39.81],[-118.89,39.81],[-117.93,39.81],[-117.93,40.42],[-118.89,40.42],[-119.35,40.42],[-119.35,39.81]]],
+                        "type": "Polygon"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Clark" },
+                    "geometry": {
+                        "coordinates": [[[-115.64,35.85],[-114.75,35.85],[-114.75,36.84],[-115.64,36.84],[-116.53,36.84],[-116.53,35.85],[-115.64,35.85]]],
+                        "type": "Polygon"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Douglas" },
+                    "geometry": {
+                        "coordinates": [[[-120.00,38.67],[-119.58,38.67],[-119.58,39.31],[-120.00,39.31],[-120.00,38.67]]],
+                        "type": "Polygon"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Elko" },
+                    "geometry": {
+                        "coordinates": [[[-116.86,40.42],[-115.35,40.42],[-114.04,40.42],[-114.04,41.99],[-115.35,41.99],[-116.86,41.99],[-116.86,40.42]]],
+                        "type": "Polygon"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Esmeralda" },
+                    "geometry": {
+                        "coordinates": [[[-117.97,37.51],[-117.35,37.51],[-117.35,38.30],[-117.97,38.30],[-117.97,37.51]]],
+                        "type": "Polygon"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Carson City" },
+                    "geometry": {
+                        "coordinates": [[[-119.85,39.11],[-119.58,39.11],[-119.58,39.31],[-119.85,39.31],[-119.85,39.11]]],
+                        "type": "Polygon"
+                    }
                 }
-            },
-            {
-                "type": "Feature",
-                "properties": { "name": "Clark" },
-                "geometry": {
-                    "coordinates": [[[-115.64,35.85],[-114.75,35.85],[-114.75,36.84],[-115.64,36.84],[-116.53,36.84],[-116.53,35.85],[-115.64,35.85]]],
-                    "type": "Polygon"
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": { "name": "Douglas" },
-                "geometry": {
-                    "coordinates": [[[-120.00,38.67],[-119.58,38.67],[-119.58,39.31],[-120.00,39.31],[-120.00,38.67]]],
-                    "type": "Polygon"
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": { "name": "Elko" },
-                "geometry": {
-                    "coordinates": [[[-116.86,40.42],[-115.35,40.42],[-114.04,40.42],[-114.04,41.99],[-115.35,41.99],[-116.86,41.99],[-116.86,40.42]]],
-                    "type": "Polygon"
-                }
-            },
-            {
-                "type": "Feature",
-                "properties": { "name": "Esmeralda" },
-                "geometry": {
-                    "coordinates": [[[-117.97,37.51],[-117.35,37.51],[-117.35,38.30],[-117.97,38.30],[-117.97,37.51]]],
-                    "type": "Polygon"
-                }
-            },
-            // ... Add all other Nevada counties similarly
-            {
-                "type": "Feature",
-                "properties": { "name": "Carson City" },
-                "geometry": {
-                    "coordinates": [[[-119.85,39.11],[-119.58,39.11],[-119.58,39.31],[-119.85,39.31],[-119.85,39.11]]],
-                    "type": "Polygon"
-                }
-            }
-        ]
-    };
-
-    const counties = [
-        'Carson City', 'Churchill', 'Clark', 'Douglas', 'Elko', 'Esmeralda',
-        'Eureka', 'Humboldt', 'Lander', 'Lincoln', 'Lyon', 'Mineral',
-        'Nye', 'Pershing', 'Storey', 'Washoe', 'White Pine'
-    ];
-
-    let countyData = {};
-    const tooltip = d3.select('#county-tooltip');
-
-    function initializeData() {
-        counties.forEach(county => {
-            countyData[county] = {
-                democratic: 0,
-                republican: 0,
-                other: 0,
-                activeVoters: 1000
-            };
-        });
-        updateDisplay();
-        populateTable();
-        initializeMap();
-        createCharts();
-    }
-
-    function calculatePercentages(data) {
-        const total = data.democratic + data.republican + data.other;
-        return {
-            democratic: total === 0 ? 0 : (data.democratic / total * 100),
-            republican: total === 0 ? 0 : (data.republican / total * 100),
-            other: total === 0 ? 0 : (data.other / total * 100),
-            turnout: (total / data.activeVoters * 100)
+            ]
         };
-    }
-
-    function initializeMap() {
-        const width = document.querySelector('.map-box').clientWidth;
-        const height = document.querySelector('.map-box').clientHeight;
-
-        d3.select("#nevada-map").html("");
-
-        const svg = d3.select("#nevada-map")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            .attr("viewBox", `0 0 ${width} ${height}`);
-
-        const projection = d3.geoAlbers()
-            .rotate([117, 0])
-            .center([0, 39])
-            .scale(height * 6.2)
-            .translate([width / 2, height / 2.5]);
-
-        const path = d3.geoPath().projection(projection);
-
-        const counties = svg.append("g")
-            .selectAll("path")
-            .data(nevadaCounties.features)
-            .enter()
-            .append("path")
-            .attr("d", path)
-            .attr("class", "county")
-            .attr("fill", d => getCountyColor(d.properties.name))
-            .on("mouseover", function(event, d) {
-                const countyData = getCountyData(d.properties.name);
-                tooltip.style("opacity", 1)
-                    .html(getTooltipContent(countyData));
-            })
-            .on("mousemove", function(event) {
-                tooltip.style("left", (event.pageX + 15) + "px")
-                    .style("top", (event.pageY - 15) + "px");
-            })
-            .on("mouseout", function() {
-                tooltip.style("opacity", 0);
+        
+        const counties = [
+            'Carson City', 'Churchill', 'Clark', 'Douglas', 'Elko', 'Esmeralda',
+            'Eureka', 'Humboldt', 'Lander', 'Lincoln', 'Lyon', 'Mineral',
+            'Nye', 'Pershing', 'Storey', 'Washoe', 'White Pine'
+        ];
+        
+        let countyData = {};
+        const tooltip = d3.select('#county-tooltip');
+        
+        function initializeData() {
+            counties.forEach(county => {
+                countyData[county] = {
+                    democratic: 0,
+                    republican: 0,
+                    other: 0,
+                    activeVoters: 1000,
+                    county: county
+                };
             });
-    }
-
-    function getCountyColor(countyName) {
-        const county = countyData[countyName];
-        if (!county) return '#E8E8E8';
-
-        const demVotes = county.democratic;
-        const repVotes = county.republican;
+            updateDisplay();
+            populateTable();
+            initializeMap();
+        }
         
-        if (demVotes === 0 && repVotes === 0) return '#E8E8E8';
+        function calculatePercentages(data) {
+            const total = data.democratic + data.republican + data.other;
+            return {
+                democratic: total === 0 ? 0 : (data.democratic / total * 100),
+                republican: total === 0 ? 0 : (data.republican / total * 100),
+                other: total === 0 ? 0 : (data.other / total * 100),
+                turnout: (total / data.activeVoters * 100)
+            };
+        }
         
-        const margin = Math.abs(demVotes - repVotes) / (demVotes + repVotes);
-        const intensity = Math.min(margin / 0.1, 1);
+        function initializeMap() {
+            const width = document.querySelector('.map-box').clientWidth;
+            const height = document.querySelector('.map-box').clientHeight;
         
-        return demVotes > repVotes 
-            ? d3.interpolateRgb('#FFFFFF', '#2889FF')(intensity)
-            : d3.interpolateRgb('#FFFFFF', '#D1495B')(intensity);
-    }
-
-    function updateDisplay() {
-        const totals = Object.values(countyData).reduce((acc, county) => ({
-            democratic: acc.democratic + Number(county.democratic),
-            republican: acc.republican + Number(county.republican),
-            other: acc.other + Number(county.other),
-            activeVoters: acc.activeVoters + Number(county.activeVoters)
-        }), { democratic: 0, republican: 0, other: 0, activeVoters: 0 });
-
-        const totalVotes = totals.democratic + totals.republican + totals.other;
-        const percentages = calculatePercentages(totals);
-
-        // Update cards
-        document.getElementById('total-votes').textContent = totalVotes.toLocaleString();
-        document.getElementById('total-percentage').textContent = 
-            `${percentages.turnout.toFixed(1)}% of Active Voters`;
-
-        document.getElementById('dem-votes').textContent = totals.democratic.toLocaleString();
-        document.getElementById('dem-percentage').textContent = 
-            `${percentages.democratic.toFixed(1)}% of Total`;
-
-        document.getElementById('rep-votes').textContent = totals.republican.toLocaleString();
-        document.getElementById('rep-percentage').textContent = 
-            `${percentages.republican.toFixed(1)}% of Total`;
-
-        document.getElementById('other-votes').textContent = totals.other.toLocaleString();
-        document.getElementById('other-percentage').textContent = 
-            `${percentages.other.toFixed(1)}% of Total`;
-
-        // Update visualizations
-        updateMap();
-        updateCharts();
-        populateTable();
-    }
-
-    function populateTable() {
-        const tbody = document.getElementById('county-tbody');
-        tbody.innerHTML = '';
-
-        counties.forEach(county => {
-            const data = countyData[county];
+            d3.select("#nevada-map").html("");
+        
+            const svg = d3.select("#nevada-map")
+                .append("svg")
+                .attr("width", "100%")
+                .attr("height", "100%")
+                .attr("viewBox", `0 0 ${width} ${height}`);
+        
+            const projection = d3.geoAlbers()
+                .rotate([117, 0])
+                .center([0, 39])
+                .scale(height * 6.2)
+                .translate([width / 2, height / 2.5]);
+        
+            const path = d3.geoPath().projection(projection);
+        
+            svg.append("g")
+                .selectAll("path")
+                .data(nevadaCounties.features)
+                .enter()
+                .append("path")
+                .attr("d", path)
+                .attr("class", "county")
+                .attr("fill", d => getCountyColor(d.properties.name))
+                .on("mouseover", function(event, d) {
+                    tooltip.style("opacity", 1)
+                        .html(getTooltipContent(countyData[d.properties.name]));
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("left", (event.pageX + 15) + "px")
+                        .style("top", (event.pageY - 15) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("opacity", 0);
+                });
+        }
+        
+        function getCountyColor(countyName) {
+            const county = countyData[countyName];
+            if (!county) return '#E8E8E8';
+        
+            const demVotes = county.democratic;
+            const repVotes = county.republican;
+            
+            if (demVotes === 0 && repVotes === 0) return '#E8E8E8';
+            
+            const margin = Math.abs(demVotes - repVotes) / (demVotes + repVotes);
+            const intensity = Math.min(margin / 0.1, 1);
+            
+            return demVotes > repVotes 
+                ? d3.interpolateRgb('#FFFFFF', '#2889FF')(intensity)
+                : d3.interpolateRgb('#FFFFFF', '#D1495B')(intensity);
+        }
+        
+        function updateDisplay() {
+            const totals = Object.values(countyData).reduce((acc, county) => ({
+                democratic: acc.democratic + Number(county.democratic),
+                republican: acc.republican + Number(county.republican),
+                other: acc.other + Number(county.other),
+                activeVoters: acc.activeVoters + Number(county.activeVoters)
+            }), { democratic: 0, republican: 0, other: 0, activeVoters: 0 });
+        
+            const totalVotes = totals.democratic + totals.republican + totals.other;
+            const percentages = calculatePercentages(totals);
+        
+            // Update cards
+            document.getElementById('total-votes').textContent = totalVotes.toLocaleString();
+            document.getElementById('total-percentage').textContent = 
+                `${percentages.turnout.toFixed(1)}% of Active Voters`;
+        
+            document.getElementById('dem-votes').textContent = totals.democratic.toLocaleString();
+            document.getElementById('dem-percentage').textContent = 
+                `${percentages.democratic.toFixed(1)}% of Total`;
+        
+            document.getElementById('rep-votes').textContent = totals.republican.toLocaleString();
+            document.getElementById('rep-percentage').textContent = 
+                `${percentages.republican.toFixed(1)}% of Total`;
+        
+            document.getElementById('other-votes').textContent = totals.other.toLocaleString();
+            document.getElementById('other-percentage').textContent = 
+                `${percentages.other.toFixed(1)}% of Total`;
+        
+            // Update map colors
+            initializeMap();
+        }
+        
+        function populateTable() {
+            const tbody = document.getElementById('county-tbody');
+            tbody.innerHTML = '';
+        
+            counties.forEach(county => {
+                const data = countyData[county];
+                const percentages = calculatePercentages(data);
+                const total = data.democratic + data.republican + data.other;
+        
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="county-cell">${county}</td>
+                    <td class="dem-cell"><input type="number" value="${data.democratic}" 
+                        onchange="updateCountyData('${county}', 'democratic', this.value)"></td>
+                    <td class="dem-cell percentage">${percentages.democratic.toFixed(1)}%</td>
+                    <td class="rep-cell"><input type="number" value="${data.republican}"
+                        onchange="updateCountyData('${county}', 'republican', this.value)"></td>
+                    <td class="rep-cell percentage">${percentages.republican.toFixed(1)}%</td>
+                    <td class="other-cell"><input type="number" value="${data.other}"
+                        onchange="updateCountyData('${county}', 'other', this.value)"></td>
+                    <td class="other-cell percentage">${percentages.other.toFixed(1)}%</td>
+                    <td class="total-cell">${total.toLocaleString()}</td>
+                    <td class="total-cell"><input type="number" value="${data.activeVoters}"
+                        onchange="updateCountyData('${county}', 'activeVoters', this.value)"></td>
+                    <td class="total-cell">${percentages.turnout.toFixed(1)}%</td>
+                    <td class="county-cell">${county}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function updateCountyData(county, field, value) {
+            countyData[county][field] = Math.max(0, Number(value));
+            updateDisplay();
+        }
+        
+        function getTooltipContent(data) {
             const percentages = calculatePercentages(data);
             const total = data.democratic + data.republican + data.other;
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="county-cell">${county}</td>
-                <td class="dem-cell"><input type="number" value="${data.democratic}" 
-                    onchange="updateCountyData('${county}', 'democratic', this.value)"></td>
-                <td class="dem-cell percentage">${percentages.democratic.toFixed(1)}%</td>
-                <td class="rep-cell"><input type="number" value="${data.republican}"
-                    onchange="updateCountyData('${county}', 'republican', this.value)"></td>
-                <td class="rep-cell percentage">${percentages.republican.toFixed(1)}%</td>
-                <td class="other-cell"><input type="number" value="${data.other}"
-                    onchange="updateCountyData('${county}', 'other', this.value)"></td>
-                <td class="other-cell percentage">${percentages.other.toFixed(1)}%</td>
-                <td class="total-cell">${total.toLocaleString()}</td>
-                <td class="total-cell"><input type="number" value="${data.activeVoters}"
-                    onchange="updateCountyData('${county}', 'activeVoters', this.value)"></td>
-                <td class="total-cell">${percentages.turnout.toFixed(1)}%</td>
-                <td class="county-cell">${county}</td>
+            return `
+                <strong>${data.county}</strong>
+                <div class="stat-row dem-stat">
+                    <span>Dem:</span>
+                    <span>${data.democratic.toLocaleString()} (${percentages.democratic.toFixed(1)}%)</span>
+                </div>
+                <div class="stat-row rep-stat">
+                    <span>Rep:</span>
+                    <span>${data.republican.toLocaleString()} (${percentages.republican.toFixed(1)}%)</span>
+                </div>
+                <div class="stat-row other-stat">
+                    <span>Other:</span>
+                    <span>${data.other.toLocaleString()} (${percentages.other.toFixed(1)}%)</span>
+                </div>
+                <div class="stat-row total-stat">
+                    <span>Total:</span>
+                    <span>${total.toLocaleString()}</span>
+                </div>
+                <div class="stat-row total-stat">
+                    <span>Turnout:</span>
+                    <span>${percentages.turnout.toFixed(1)}%</span>
+                </div>
             `;
-            tbody.appendChild(row);
-        });
-    }
-
-    let charts = {
-        partyBreakdown: null,
-        countyBreakdown: null
-    };
-
-    function createCharts() {
-        const totals = calculateTotals();
-        
-        // Party Breakdown Chart
-        const ctx1 = document.getElementById('partyBreakdown').getContext('2d');
-        charts.partyBreakdown = new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: ['Total', 'Democratic', 'Republican', 'Other'],
-                datasets: [{
-                    label: 'Early Votes',
-                    data: [totals.total, totals.democratic, totals.republican, totals.other],
-                    backgroundColor: ['#028090', '#2889FF', '#D1495B', '#63B893'],
-                    borderColor: ['#028090', '#2889FF', '#D1495B', '#63B893'],
-                    borderWidth: 1
-                }]
-            },
-            options: getChartOptions('Early Votes vs Party Registrations')
-        });
-
-        // County Breakdown Chart
-        const ctx2 = document.getElementById('countyBreakdown').getContext('2d');
-        charts.countyBreakdown = new Chart(ctx2, {
-            type: 'bar',
-            data: getCountyChartData(),
-            options: getChartOptions('Early Votes by County', true)
-        });
-    }
-
-    function updateCharts() {
-        const totals = calculateTotals();
-        
-        if (charts.partyBreakdown) {
-            charts.partyBreakdown.data.datasets[0].data = [
-                totals.total,
-                totals.democratic,
-                totals.republican,
-                totals.other
-            ];
-            charts.partyBreakdown.update();
         }
-        
-        if (charts.countyBreakdown) {
-            charts.countyBreakdown.data = getCountyChartData();
-            charts.countyBreakdown.update();
-        }
-    }
-
-    function getChartOptions(title, showXAxis = false) {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: title,
-                    font: {
-                        family: 'Libre Franklin',
-                        size: 18,
-                        weight: 'bold'
-                    }
-                },
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        font: {
-                            family: 'Libre Franklin',
-                            size: 14
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: value => value.toLocaleString()
-                    }
-                },
-                x: {
-                    display: showXAxis,
-                    ticks: {
-                        autoSkip: false,
-                        maxRotation: 45,
-                        minRotation: 45
-                    }
-                }
-            }
-        };
-    }
-
-    function updateCountyData(county, field, value) {
-        countyData[county][field] = Math.max(0, Number(value));
-        updateDisplay();
-    }
-
-    function getTooltipContent(data) {
-        const percentages = calculatePercentages(data);
-        return `
-            <strong>${data.county}</strong>
-            <div class="stat-row dem-stat">
-                <span>Dem:</span>
-                <span>${data.democratic.toLocaleString()}</span>
-            </div>
-            <div class="stat-row rep-stat">
-                <span>Rep:</span>
-                <span>${data.republican.toLocaleString()}</span>
-            </div>
-            <div class="stat-row other-stat">
-                <span>Other:</span>
-                <span>${data.other.toLocaleString()}</span>
-            </div>
-            <div class="stat-row total-stat">
-                <span>Total:</span>
-                <span>${(data.democratic + data.republican + data.other).toLocaleString()}</span>
-            </div>
-            <div class="stat-row total-stat">
-                <span>Turnout:</span>
-                <span>${percentages.turnout.toFixed(1)}%</span>
-            </div>
-        `;
-    }
-
-    // Initialize the dashboard
-    initializeData();
-
+    
     // Handle window resizing
     window.addEventListener('resize', _.debounce(() => {
         initializeMap();
-        const charts = Object.values(Chart.instances);
-        charts.forEach(chart => {
-            if (chart.options && chart.options.plugins) {
-                const isMobile = window.innerWidth <= 768;
-                chart.options.plugins.legend.position = isMobile ? 'bottom' : 'right';
-                chart.update();
-            }
-        });
     }, 250));
+
+    // Initialize the dashboard
+    initializeData();
+   });
 </script>
 </body>
 </html>
