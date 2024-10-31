@@ -289,7 +289,7 @@
     <div class="map-box">
         <div id="nevada-map" class="map-container"></div>
     </div>
-
+    </div> 
     <div class="data-grid">
         <table id="county-data">
             <thead>
@@ -315,6 +315,15 @@
     <div id="county-tooltip" class="county-tooltip"></div>
     
 <script>
+        const counties = [
+            'Carson City', 'Churchill', 'Clark', 'Douglas', 'Elko', 'Esmeralda',
+            'Eureka', 'Humboldt', 'Lander', 'Lincoln', 'Lyon', 'Mineral',
+            'Nye', 'Pershing', 'Storey', 'Washoe', 'White Pine'
+        ];
+        
+        let countyData = {};
+        const tooltip = d3.select('#county-tooltip');
+        
         async function fetchGeoJSON() {
             try {
                 const response = await fetch('https://raw.githubusercontent.com/peteli92/NV-Data-1023/refs/heads/main/nevada-counties.geojson');
@@ -515,11 +524,11 @@
             updateCountyColors(); // New function to update colors only
         }
 
-        function updateCountyColors() {
-            nevadaCounties.features.forEach(feature => {
-                const county = feature.properties.name;
-                const countyElement = d3.select(`#county-${county.replace(/\s+/g, '-')}`);
-                countyElement.attr("fill", getCountyColor(county));
+        async function updateCountyColors() {
+            const counties = d3.selectAll('.county');
+            counties.each(function(d) {
+                const county = d.properties.name;
+                d3.select(this).attr("fill", getCountyColor(county));
             });
         }
         
@@ -547,11 +556,7 @@
         window.addEventListener('resize', _.debounce(() => {
         initializeMap();
         }, 250));
-    
-    // Initialize everything when the DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-        initializeData();
-    });
+
             
 </script>
 </body>
