@@ -59,7 +59,7 @@
             width: 25%;
             gap: 15px;
             float: left;
-            height: 350px;  /* Reduced from 750px */
+            height: 750px;
             padding: 0 20px;
             box-sizing: border-box;
         }
@@ -225,6 +225,33 @@
             font-weight: normal;
         }
 
+        .data-grid {
+            clear: both;
+            margin-top: 30px; /* Add space after the map */
+        }
+        
+        .map-and-stats {
+            position: relative;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .content {
+            padding: 0 20px;
+        }
+        
+        .map-and-stats {
+            position: relative;
+            margin: 30px 0;
+            overflow: hidden;
+            clear: both;
+        }
+        
+        .data-grid {
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+        
         @media screen and (max-width: 768px) {
             .stats-grid {
                 display: grid !important;
@@ -252,44 +279,45 @@
             }
         }
     </style>
-</head>
 <body>
     <div class="top-bar">
         <h1>Nevada Early Voting Statistics</h1>
     </div>
 
-<h2 style="text-align: left; margin: 20px 0 10px; font-size: 24px; font-weight: 700;">Nevada</h2>
-<h3 style="text-align: left; margin: 0 0 20px; font-size: 20px; font-weight: 600;">Nevada</h3>
-    
-    <div class="map-and-stats">
+    <div class="content">
+        <h2 style="text-align: left; margin: 20px 0 10px; font-size: 24px; font-weight: 700;">Nevada Early Voting and Accepted Returned Mail Ballots</h2>
+        <h3 style="text-align: left; margin: 0 0 20px; font-size: 20px; font-weight: 600;">By Voter Registered Party</h3>
         
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h3 class="total-color">Total Early Votes</h3>
-            <div class="value total-color" id="total-votes">0</div>
-            <div class="total-color" id="total-percentage">0% of Active Voters</div>
-        </div>
-        <div class="stat-card">
-            <h3 class="dem-color">Democratic</h3>
-            <div class="value dem-color" id="dem-votes">0</div>
-            <div class="dem-color" id="dem-percentage">0% of Total</div>
-        </div>
-        <div class="stat-card">
-            <h3 class="rep-color">Republican</h3>
-            <div class="value rep-color" id="rep-votes">0</div>
-            <div class="rep-color" id="rep-percentage">0% of Total</div>
-        </div>
-        <div class="stat-card">
-            <h3 class="other-color">Other</h3>
-            <div class="value other-color" id="other-votes">0</div>
-            <div class="other-color" id="other-percentage">0% of Total</div>
+        <div class="map-and-stats">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 class="total-color">Total Early Votes</h3>
+                    <div class="value total-color" id="total-votes">0</div>
+                    <div class="total-color" id="total-percentage">0% of Active Voters</div>
+                </div>
+                <div class="stat-card">
+                    <h3 class="dem-color">Democratic</h3>
+                    <div class="value dem-color" id="dem-votes">0</div>
+                    <div class="dem-color" id="dem-percentage">0% of Total</div>
+                </div>
+                <div class="stat-card">
+                    <h3 class="rep-color">Republican</h3>
+                    <div class="value rep-color" id="rep-votes">0</div>
+                    <div class="rep-color" id="rep-percentage">0% of Total</div>
+                </div>
+                <div class="stat-card">
+                    <h3 class="other-color">Other</h3>
+                    <div class="value other-color" id="other-votes">0</div>
+                    <div class="other-color" id="other-percentage">0% of Total</div>
+                </div>
+            </div>
+            
+            <div class="map-box">
+                <div id="nevada-map" class="map-container"></div>
+            </div>
         </div>
     </div>
 
-    <div class="map-box">
-        <div id="nevada-map" class="map-container"></div>
-    </div>
-    </div> 
     <div class="data-grid">
         <table id="county-data">
             <thead>
@@ -313,7 +341,7 @@
     </div>
 
     <div id="county-tooltip" class="county-tooltip"></div>
-    
+</body>
 <script>
         const counties = [
             'Carson City', 'Churchill', 'Clark', 'Douglas', 'Elko', 'Esmeralda',
@@ -348,12 +376,16 @@
         }
         
         function calculatePercentages(data) {
-            const total = data.democratic + data.republican + data.other;
+            if (!data) return { democratic: 0, republican: 0, other: 0, turnout: 0 };
+            
+            const total = Number(data.democratic) + Number(data.republican) + Number(data.other);
+            const activeVoters = Number(data.activeVoters) || 1; // prevent division by zero
+            
             return {
-                democratic: total === 0 ? 0 : (data.democratic / total * 100),
-                republican: total === 0 ? 0 : (data.republican / total * 100),
-                other: total === 0 ? 0 : (data.other / total * 100),
-                turnout: (total / data.activeVoters * 100)
+                democratic: total === 0 ? 0 : ((Number(data.democratic) / total) * 100),
+                republican: total === 0 ? 0 : ((Number(data.republican) / total) * 100),
+                other: total === 0 ? 0 : ((Number(data.other) / total) * 100),
+                turnout: ((total / activeVoters) * 100)
             };
         }
 
@@ -457,10 +489,10 @@
         
         function updateDisplay() {
             const totals = Object.values(countyData).reduce((acc, county) => ({
-                democratic: acc.democratic + Number(county.democratic),
-                republican: acc.republican + Number(county.republican),
-                other: acc.other + Number(county.other),
-                activeVoters: acc.activeVoters + Number(county.activeVoters)
+                democratic: acc.democratic + (Number(county.democratic) || 0),
+                republican: acc.republican + (Number(county.republican) || 0),
+                other: acc.other + (Number(county.other) || 0),
+                activeVoters: acc.activeVoters + (Number(county.activeVoters) || 0)
             }), { democratic: 0, republican: 0, other: 0, activeVoters: 0 });
         
             const totalVotes = totals.democratic + totals.republican + totals.other;
@@ -483,10 +515,8 @@
             document.getElementById('other-percentage').textContent = 
                 `${percentages.other.toFixed(1)}% of Total`;
         
-            // Update map colors
-            initializeMap();
+            updateCountyColors();
         }
-        
         function populateTable() {
             const tbody = document.getElementById('county-tbody');
             tbody.innerHTML = '';
