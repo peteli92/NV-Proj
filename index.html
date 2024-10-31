@@ -281,13 +281,14 @@
     </style>
 <body>
     <div class="top-bar">
-        <h1>Nevada Projections</h1>
+        <h1>Nevada Projection</h1>
     </div>
+
     <div style="padding: 20px;">
-        <div class="content">
-            <h2 style="text-align: left; margin: 20px 0 10px; font-size: 24px; font-weight: 700;">.</h2>
-            <h3 style="text-align: left; margin: 0 0 20px; font-size: 20px; font-weight: 600;">.</h3>
-         </div>
+    <div class="content">
+        <h2 style="text-align: left; margin: 20px 0 10px; font-size: 24px; font-weight: 700;">Nevada</h2>
+        <h3 style="text-align: left; margin: 0 0 20px; font-size: 20px; font-weight: 600;">2024</h3>
+    </div>
         
         <div class="map-and-stats">
             <div class="stats-grid">
@@ -310,10 +311,13 @@
                     <h3 class="other-color">Other</h3>
                     <div class="value other-color" id="other-votes">0</div>
                     <div class="other-color" id="other-percentage">0% of Total</div>
-                </div>            
+                </div>
+            
             <div class="map-box">
                 <div id="nevada-map" class="map-container"></div>
-           </div>
+            </div>
+        </div>
+
     <div class="data-grid">
         <table id="county-data">
             <thead>
@@ -338,6 +342,7 @@
 
     <div id="county-tooltip" class="county-tooltip"></div>
 </body>
+
 <script>
         const counties = [
             'Carson City', 'Churchill', 'Clark', 'Douglas', 'Elko', 'Esmeralda',
