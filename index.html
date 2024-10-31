@@ -51,9 +51,8 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-
+    
         .stats-grid {
-            margin-top: 20px;
             display: flex;
             flex-direction: column;
             width: 25%;
@@ -102,23 +101,21 @@
             box-sizing: border-box;
         }
 
-        .map-box {
+          .map-container {
             width: 75%;
-            float: right;
-            height: 1500px;
-            box-sizing: border-box;
-            padding: 0px;
-            position: relative;
-            background: none;
-        }
-
-        .map-container {
-            width: 100%;
             height: 100%;
             position: relative;
-            background: none;
-            border: none;
             display: block;
+            border: none;
+        }
+
+        .map-box {
+            width: 100%;
+            height: 850px; /* Increase height for better visibility */
+            margin: 0 auto; /* Center map container */
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         #nevada-map {
