@@ -46,7 +46,7 @@
 
         /* Stats Grid - Left side */
         .stats-grid {
-            margin-top: 20px;  /* Add this line to lower the cards */
+             margin-top: 60px; 
             display: flex;
             flex-direction: column;
             width: 25%;
@@ -182,6 +182,16 @@
             height: 100%;
             background: none;
         }
+       
+        .county rect {
+            transition: all 0.3s ease;
+        }
+        
+        .county rect:hover {
+            opacity: 0.8;
+            stroke: #000000;
+            stroke-width: 1.5;
+        }
         
         /* Responsive design */
         @media screen and (max-width: 768px) {
@@ -257,6 +267,7 @@
                     <th class="total-header">Total Votes</th>
                     <th class="active-header">Active Voters</th>
                     <th class="total-header">Turnout %</th>
+                    <th class="county-header">County</th>  <!-- Added this -->
                 </tr>
             </thead>
             <tbody id="county-tbody">
@@ -420,29 +431,54 @@
                 .append("svg")
                 .attr("width", "100%")
                 .attr("height", "100%")
-                .attr("viewBox", [0, 0, width, height]);
+                .attr("viewBox", `0 0 ${width} ${height}`);
+        
+            // Create background
+            svg.append("rect")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("fill", "none");
         
             // Project map
-            const projection = d3.geoAlbers()
-                .rotate([117, 0])
-                .center([0, 39])
-                .scale(height * 6.2)
-                .translate([width / 2, height / 2.5]);
+            const projection = d3.geoMercator()
+                .center([-116.5, 38.8])
+                .scale(width * 3.5)
+                .translate([width / 2, height / 2]);
         
             const path = d3.geoPath().projection(projection);
         
-            // Draw counties
-            svg.selectAll("path")
-                .data(nevadaCounties.features)
+            // Create a group for the counties
+            const counties = svg.append("g");
+        
+            // Draw rectangles as placeholders for counties
+            counties.selectAll("path")
+                .data(Object.keys(countyData))
                 .enter()
-                .append("path")
-                .attr("d", path)
+                .append("rect")
                 .attr("class", "county")
-                .attr("fill", d => getCountyColor(d.properties.name))
+                .attr("x", (d, i) => (i % 4) * (width / 4) + 10)
+                .attr("y", (d, i) => Math.floor(i / 4) * (height / 5) + 10)
+                .attr("width", width / 4 - 20)
+                .attr("height", height / 5 - 20)
+                .attr("fill", d => getCountyColor(d))
                 .attr("stroke", "#FFFFFF")
                 .attr("stroke-width", 0.8);
+        
+            // Add county labels
+            counties.selectAll("text")
+                .data(Object.keys(countyData))
+                .enter()
+                .append("text")
+                .attr("x", (d, i) => (i % 4) * (width / 4) + (width / 8))
+                .attr("y", (d, i) => Math.floor(i / 4) * (height / 5) + (height / 10))
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "#000000")
+                .attr("font-family", "Libre Franklin")
+                .attr("font-size", "12px")
+                .text(d => d);
         }
-       
+        
         function getCountyColor(countyName) {
             const county = countyData[countyName];
             if (!county) return '#E8E8E8';
@@ -462,13 +498,13 @@
             }
         }
         
-        // Replace existing updateMap function
+        // Update the updateMap function
         function updateMap() {
-            const paths = d3.selectAll('.county');
-            if (!paths.empty()) {
-                paths.transition()
+            const counties = d3.selectAll(".county");
+            if (!counties.empty()) {
+                counties.transition()
                     .duration(500)
-                    .attr("fill", d => getCountyColor(d.properties.name));
+                    .attr("fill", d => getCountyColor(d));
             } else {
                 initializeMap();
             }
@@ -549,21 +585,23 @@
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="county-cell">${county}</td>
-                    <td class="dem-cell"><input type="number" value="${data.democratic}" 
-                        onchange="updateCountyData('${county}', 'democratic', this.value)"></td>
-                    <td class="dem-cell percentage">${percentages.democratic.toFixed(1)}%</td>
-                    <td class="rep-cell"><input type="number" value="${data.republican}"
-                        onchange="updateCountyData('${county}', 'republican', this.value)"></td>
-                    <td class="rep-cell percentage">${percentages.republican.toFixed(1)}%</td>
-                    <td class="other-cell"><input type="number" value="${data.other}"
-                        onchange="updateCountyData('${county}', 'other', this.value)"></td>
-                    <td class="other-cell percentage">${percentages.other.toFixed(1)}%</td>
-                    <td class="total-cell">${total.toLocaleString()}</td>
-                    <td class="total-cell"><input type="number" value="${data.activeVoters}"
-                        onchange="updateCountyData('${county}', 'activeVoters', this.value)"></td>
-                    <td class="total-cell">${percentages.turnout.toFixed(1)}%</td>
-                `;
+                    row.innerHTML = `
+                        <td class="county-cell">${county}</td>
+                        <td class="dem-cell"><input type="number" value="${data.democratic}" 
+                            onchange="updateCountyData('${county}', 'democratic', this.value)"></td>
+                        <td class="dem-cell percentage">${percentages.democratic.toFixed(1)}%</td>
+                        <td class="rep-cell"><input type="number" value="${data.republican}"
+                            onchange="updateCountyData('${county}', 'republican', this.value)"></td>
+                        <td class="rep-cell percentage">${percentages.republican.toFixed(1)}%</td>
+                        <td class="other-cell"><input type="number" value="${data.other}"
+                            onchange="updateCountyData('${county}', 'other', this.value)"></td>
+                        <td class="other-cell percentage">${percentages.other.toFixed(1)}%</td>
+                        <td class="total-cell">${total.toLocaleString()}</td>
+                        <td class="total-cell"><input type="number" value="${data.activeVoters}"
+                            onchange="updateCountyData('${county}', 'activeVoters', this.value)"></td>
+                        <td class="total-cell">${percentages.turnout.toFixed(1)}%</td>
+                        <td class="county-cell">${county}</td>
+                    `;
                 tbody.appendChild(row);
             });
         }
