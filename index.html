@@ -91,11 +91,11 @@
         .map-box {
             width: 75%;
             float: right;
-            height: 750px;
+            height: 350px; /* Adjusted to match the stats-grid height */
             box-sizing: border-box;
             padding: 20px;
             position: relative;
-            background: none;
+            background: #FFFFFF;
         }
 
         .map-container {
@@ -110,24 +110,16 @@
         #nevada-map {
             width: 100%;
             height: 100%;
-        }
-
-        #nevada-map svg {
-            width: 100%;
-            height: 100%;
-            background: none;
-        }
+            background: #FFFFFF;
+        }    
 
         .county {
-            stroke: #FFFFFF;
-            stroke-width: 0.8;
+            transition: stroke-width 0.2s ease;
         }
-
+        
         .county:hover {
             opacity: 0.8;
             cursor: pointer;
-            stroke: #000;
-            stroke-width: 1.5;
         }
 
         .county-tooltip {
@@ -519,18 +511,17 @@
                 .append("svg")
                 .attr("width", "100%")
                 .attr("height", "100%")
-                .attr("viewBox", `0 0 ${width} ${height}`);
+                .attr("viewBox", `0 0 ${width} ${height}`)
+                .style("background", "#FFFFFF"); // Set white background
         
-            // Adjust projection to better fit Nevada's shape
             const projection = d3.geoAlbers()
-                .rotate([116.5, 0]) // Adjusted rotation
-                .center([0, 38.8]) // Centered on Nevada
-                .scale(height * 3) // Reduced scale to show full state
+                .rotate([116.5, 0])
+                .center([0, 38.8])
+                .scale(height * 3)
                 .translate([width / 2, height / 2]);
         
             const path = d3.geoPath().projection(projection);
         
-            // Add counties with default color
             svg.append("g")
                 .selectAll("path")
                 .data(nevadaCounties.features)
@@ -538,11 +529,13 @@
                 .append("path")
                 .attr("d", path)
                 .attr("class", "county")
-                .attr("fill", "#E8E8E8") // Default light gray
-                .attr("stroke", "#FFFFFF")
-                .attr("stroke-width", "1")
+                .attr("fill", "#FFFFFF") // Make counties white by default
+                .attr("stroke", "#0B132B") // Dark blue county lines
+                .attr("stroke-width", "1.5") // Slightly thicker lines for better visibility
                 .attr("id", d => `county-${d.properties.name.replace(/\s+/g, '-')}`)
                 .on("mouseover", function(event, d) {
+                    d3.select(this)
+                        .attr("stroke-width", "2.5"); // Thicker border on hover
                     tooltip.style("opacity", 1)
                         .html(getTooltipContent(countyData[d.properties.name]));
                 })
@@ -551,6 +544,8 @@
                         .style("top", (event.pageY - 15) + "px");
                 })
                 .on("mouseout", function() {
+                    d3.select(this)
+                        .attr("stroke-width", "1.5"); // Reset border width
                     tooltip.style("opacity", 0);
                 });
         }
