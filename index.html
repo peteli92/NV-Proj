@@ -159,7 +159,19 @@
             color: inherit;
             font-weight: normal;
         }
-
+        
+        .county {
+            stroke: #FFFFFF;
+            stroke-width: 0.8;
+        }
+        
+        .county:hover {
+            opacity: 0.8;
+            cursor: pointer;
+            stroke: #000;
+            stroke-width: 1.5;
+        }
+        
         /* Responsive design */
         @media screen and (max-width: 768px) {
             .stats-grid {
@@ -243,20 +255,180 @@
     </div>
 
     <script>
-
-        // Add this GeoJSON data at the top of your script
+        // Replace your existing map-related JavaScript with this:
         const nevadaCounties = {
           "type": "FeatureCollection",
           "features": [
             {
               "type": "Feature",
-              "properties": { "name": "Clark" },
+              "properties": { "name": "Churchill" },
               "geometry": {
-                "type": "Polygon",
-                "coordinates": [[[-114.7, 35.8], [-114.7, 36.8], [-115.9, 36.8], [-115.9, 35.8], [-114.7, 35.8]]]
+                "coordinates": [
+                  [[-119.35,39.81],[-118.89,39.81],[-117.93,39.81],[-117.93,40.42],[-118.89,40.42],[-119.35,40.42],[-119.35,39.81]]
+                ],
+                "type": "Polygon"
               }
             },
-            // Add other counties similarly...
+            {
+              "type": "Feature",
+              "properties": { "name": "Clark" },
+              "geometry": {
+                "coordinates": [
+                  [[-115.64,35.85],[-114.75,35.85],[-114.75,36.84],[-115.64,36.84],[-116.53,36.84],[-116.53,35.85],[-115.64,35.85]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Douglas" },
+              "geometry": {
+                "coordinates": [
+                  [[-120.00,38.67],[-119.58,38.67],[-119.58,39.31],[-120.00,39.31],[-120.00,38.67]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Elko" },
+              "geometry": {
+                "coordinates": [
+                  [[-116.86,40.42],[-115.35,40.42],[-114.04,40.42],[-114.04,41.99],[-115.35,41.99],[-116.86,41.99],[-116.86,40.42]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Esmeralda" },
+              "geometry": {
+                "coordinates": [
+                  [[-117.97,37.51],[-117.35,37.51],[-117.35,38.30],[-117.97,38.30],[-117.97,37.51]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Eureka" },
+              "geometry": {
+                "coordinates": [
+                  [[-116.86,39.81],[-115.94,39.81],[-115.94,40.42],[-116.86,40.42],[-116.86,39.81]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Humboldt" },
+              "geometry": {
+                "coordinates": [
+                  [[-119.35,40.42],[-118.27,40.42],[-117.93,40.42],[-117.93,41.99],[-118.27,41.99],[-119.35,41.99],[-119.35,40.42]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Lander" },
+              "geometry": {
+                "coordinates": [
+                  [[-117.93,39.81],[-116.86,39.81],[-116.86,40.42],[-117.93,40.42],[-117.93,39.81]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Lincoln" },
+              "geometry": {
+                "coordinates": [
+                  [[-115.64,37.51],[-114.75,37.51],[-114.75,38.30],[-115.64,38.30],[-115.64,37.51]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Lyon" },
+              "geometry": {
+                "coordinates": [
+                  [[-119.35,38.67],[-119.13,38.67],[-119.13,39.31],[-119.35,39.31],[-119.35,38.67]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Mineral" },
+              "geometry": {
+                "coordinates": [
+                  [[-118.89,38.30],[-118.27,38.30],[-118.27,38.67],[-118.89,38.67],[-118.89,38.30]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Nye" },
+              "geometry": {
+                "coordinates": [
+                  [[-117.35,36.84],[-116.53,36.84],[-116.53,37.51],[-117.35,37.51],[-117.35,36.84]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Pershing" },
+              "geometry": {
+                "coordinates": [
+                  [[-119.35,40.00],[-118.27,40.00],[-118.27,40.42],[-119.35,40.42],[-119.35,40.00]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Storey" },
+              "geometry": {
+                "coordinates": [
+                  [[-119.75,39.31],[-119.58,39.31],[-119.58,39.51],[-119.75,39.51],[-119.75,39.31]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Washoe" },
+              "geometry": {
+                "coordinates": [
+                  [[-120.00,39.31],[-119.58,39.31],[-119.58,41.99],[-120.00,41.99],[-120.00,39.31]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "White Pine" },
+              "geometry": {
+                "coordinates": [
+                  [[-115.94,39.31],[-114.04,39.31],[-114.04,40.42],[-115.94,40.42],[-115.94,39.31]]
+                ],
+                "type": "Polygon"
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Carson City" },
+              "geometry": {
+                "coordinates": [
+                  [[-119.85,39.11],[-119.58,39.11],[-119.58,39.31],[-119.85,39.31],[-119.85,39.11]]
+                ],
+                "type": "Polygon"
+              }
+            }
           ]
         };
         
@@ -270,16 +442,16 @@
             // Create SVG
             const svg = d3.select("#nevada-map")
                 .append("svg")
-                .attr("width", width)
-                .attr("height", height)
+                .attr("width", "100%")
+                .attr("height", "100%")
                 .attr("viewBox", [0, 0, width, height]);
         
             // Project map
             const projection = d3.geoAlbers()
                 .rotate([117, 0])
                 .center([0, 39])
-                .scale(width * 5)
-                .translate([width / 2, height / 2]);
+                .scale(height * 6.2)
+                .translate([width / 2, height / 2.5]);
         
             const path = d3.geoPath().projection(projection);
         
@@ -295,34 +467,16 @@
                 .attr("stroke-width", 0.8);
         }
         
-        function getCountyColor(countyName) {
-            const county = countyData[countyName];
-            if (!county) return '#E8E8E8';
-        
-            const demVotes = county.democratic;
-            const repVotes = county.republican;
-            
-            if (demVotes === 0 && repVotes === 0) return '#E8E8E8';
-            
-            const margin = Math.abs(demVotes - repVotes) / (demVotes + repVotes);
-            const intensity = Math.min(margin / 0.1, 1); // 10% margin for full intensity
-            
-            if (demVotes > repVotes) {
-                return d3.interpolateRgb('#FFFFFF', '#2889FF')(intensity);
-            } else {
-                return d3.interpolateRgb('#FFFFFF', '#D1495B')(intensity);
-            }
-        }
-        
         // Update the updateMap function
         function updateMap() {
-            const mapDiv = document.getElementById('nevada-map');
-            if (!mapDiv) return;
-        
             const paths = d3.selectAll('.county');
-            paths.transition()
-                .duration(500)
-                .attr("fill", d => getCountyColor(d.properties.name));
+            if (!paths.empty()) {
+                paths.transition()
+                    .duration(500)
+                    .attr("fill", d => getCountyColor(d.properties.name));
+            } else {
+                initializeMap();
+            }
         }
         
         const counties = [
@@ -344,6 +498,7 @@
             });
             updateDisplay();
             populateTable();
+            initializeMap(); // Add this line
         }
 
         function calculatePercentages(data) {
