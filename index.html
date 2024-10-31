@@ -1,237 +1,353 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nevada Early Voting Statistics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Libre Franklin', sans-serif;
+        }
+
+        body {
+            padding-top: 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            color: #0b132b;
+            font-family: 'Libre Franklin', sans-serif;
+        }
+
+        .top-bar {
+            background: #0B132B;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 60px;
+            z-index: 1000;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 24px;
+            color: #F2F7F2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            font-family: 'Libre Franklin', sans-serif;
+        }
+
+        /* Stats Grid - Left side */
+        .stats-grid {
+          display: flex;
+          flex-direction: column;
+          width: 25%;
+          gap: 15px;
+          float: left;
+          height: 750px;
+          padding: 0 20px;  /* Changed from 20px to match original */
+          box-sizing: border-box;
+      }
+      
+      .stat-card {
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+          width: 100%;
+          height: 125px;  /* Fixed height to match original */
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+      }
+      
+      .stat-card h3 {
+          font-size: 1.1rem;
+          margin-bottom: 8px;
+          font-family: 'Libre Franklin', sans-serif;
+          font-weight: 600;
+      }
+      
+      .stat-card .value {
+          font-size: 2em;
+          font-weight: bold;
+          margin-bottom: 4px;
+      }
 
 
-// Exact color constants from original
-const COLORS = {
-  total: '#028090',
-  democratic: '#2889FF',
-  republican: '#D1495B',
-  other: '#63B893',
-  background: '#FFFFFF',
-  text: '#0B132B'
-};
+        /* Map container - Right side */
+        .map-box {
+            width: 75%;
+            float: right;
+            height: 750px;
+            box-sizing: border-box;
+            padding: 20px;
+            position: relative;
+        }
 
-const counties = [
-  'Carson City', 'Churchill', 'Clark', 'Douglas', 'Elko', 'Esmeralda', 
-  'Eureka', 'Humboldt', 'Lander', 'Lincoln', 'Lyon', 'Mineral', 
-  'Nye', 'Pershing', 'Storey', 'Washoe', 'White Pine'
-];
+        /* Color schemes */
+        .total-color { color: #028090; }
+        .dem-color { color: #2889FF; }
+        .rep-color { color: #D1495B; }
+        .other-color { color: #63B893; }
 
-const InteractiveDashboard = () => {
-  const [countyData, setCountyData] = useState(
-    counties.map(county => ({
-      county,
-      democratic: 0,
-      republican: 0,
-      other: 0,
-      activeVoters: 1000
-    }))
-  );
+        /* Data input grid */
+        .data-grid {
+            clear: both;
+            margin: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
 
-  const statewide = countyData.reduce((acc, county) => ({
-    democratic: acc.democratic + Number(county.democratic),
-    republican: acc.republican + Number(county.republican),
-    other: acc.other + Number(county.other),
-    activeVoters: acc.activeVoters + Number(county.activeVoters),
-  }), {
-    democratic: 0,
-    republican: 0,
-    other: 0,
-    activeVoters: 0
-  });
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-  const total = statewide.democratic + statewide.republican + statewide.other;
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 0.5px solid #e1e4e8;
+            font-family: 'Libre Franklin', sans-serif;
+        }
 
-  const getColorIntensity = (dem, rep) => {
-    if (dem === 0 && rep === 0) return '#E8E8E8';
-    const total = dem + rep;
-    const margin = Math.abs(dem - rep) / total;
-    const intensity = Math.min(margin / 0.1, 1); // 10% margin for full intensity, matching original
-    
-    return dem > rep 
-      ? `rgba(40, 137, 255, ${intensity})`
-      : `rgba(209, 73, 91, ${intensity})`;
-  };
+        th {
+            font-weight: 700;
+            font-size: 15px;
+            color: #F2F7F2;
+        }
 
-  const handleInputChange = (county, field, value) => {
-    setCountyData(prevData =>
-      prevData.map(c =>
-        c.county === county
-          ? { ...c, [field]: Math.max(0, Number(value)) }
-          : c
-      )
-    );
-  };
+        td {
+            font-size: 15px;
+        }
 
-  return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-6" style={{ fontFamily: 'Libre Franklin, sans-serif' }}>
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Total Votes Card */}
-        <Card className="bg-white shadow-sm">
-          <CardContent className="pt-6">
-            <h3 style={{ color: COLORS.total }} className="text-lg font-semibold mb-2">Total Early Votes</h3>
-            <div style={{ color: COLORS.total, fontSize: '2em', fontWeight: 'bold' }}>
-              {total.toLocaleString()}
-            </div>
-            <div style={{ color: COLORS.total }}>
-              {((total / statewide.activeVoters) * 100).toFixed(2)}% of Active Voters
-            </div>
-          </CardContent>
-        </Card>
+        th.county-header { background: #0B132B; }
+        th.dem-header { background: #2889FF; }
+        th.rep-header { background: #D1495B; }
+        th.other-header { background: #63B893; }
+        th.active-header { background: #028090; }
+        th.total-header { background: #028090; }
 
-        {/* Democratic Card */}
-        <Card className="bg-white shadow-sm">
-          <CardContent className="pt-6">
-            <h3 style={{ color: COLORS.democratic }} className="text-lg font-semibold mb-2">Democratic</h3>
-            <div style={{ color: COLORS.democratic, fontSize: '2em', fontWeight: 'bold' }}>
-              {statewide.democratic.toLocaleString()}
-            </div>
-            <div style={{ color: COLORS.democratic }}>
-              {((statewide.democratic / total) * 100).toFixed(2)}% of Early Votes
-            </div>
-          </CardContent>
-        </Card>
+        td.county-cell { 
+            font-weight: 700;
+            color: #0B132B;
+        }
+        td.dem-cell { color: #2889FF; }
+        td.rep-cell { color: #D1495B; }
+        td.other-cell { color: #63B893; }
+        td.total-cell { color: #028090; }
 
-        {/* Republican Card */}
-        <Card className="bg-white shadow-sm">
-          <CardContent className="pt-6">
-            <h3 style={{ color: COLORS.republican }} className="text-lg font-semibold mb-2">Republican</h3>
-            <div style={{ color: COLORS.republican, fontSize: '2em', fontWeight: 'bold' }}>
-              {statewide.republican.toLocaleString()}
-            </div>
-            <div style={{ color: COLORS.republican }}>
-              {((statewide.republican / total) * 100).toFixed(2)}% of Early Votes
-            </div>
-          </CardContent>
-        </Card>
+        input[type="number"] {
+            width: 100px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Libre Franklin', sans-serif;
+        }
 
-        {/* Other Card */}
-        <Card className="bg-white shadow-sm">
-          <CardContent className="pt-6">
-            <h3 style={{ color: COLORS.other }} className="text-lg font-semibold mb-2">Other</h3>
-            <div style={{ color: COLORS.other, fontSize: '2em', fontWeight: 'bold' }}>
-              {statewide.other.toLocaleString()}
-            </div>
-            <div style={{ color: COLORS.other }}>
-              {((statewide.other / total) * 100).toFixed(2)}% of Early Votes
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        .percentage {
+            color: inherit;
+            font-weight: normal;
+        }
 
-      {/* Map */}
-      <Card className="bg-white shadow-sm">
-        <CardHeader>
-          <CardTitle style={{ color: COLORS.text, fontFamily: 'Libre Franklin, sans-serif', fontWeight: 700 }}>
-            County Results
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="w-full aspect-[4/3] bg-white">
-            <svg viewBox="0 0 400 300">
-              {counties.map((county, i) => {
-                const countyData = countyData.find(c => c.county === county);
-                const x = (i % 4) * 100;
-                const y = Math.floor(i / 4) * 75;
-                return (
-                  <g key={county}>
-                    <rect
-                      x={x + 10}
-                      y={y + 10}
-                      width={80}
-                      height={55}
-                      fill={getColorIntensity(
-                        countyData.democratic,
-                        countyData.republican
-                      )}
-                      stroke="#FFFFFF"
-                      strokeWidth="0.8"
-                      className="county"
-                    />
-                    <text
-                      x={x + 50}
-                      y={y + 40}
-                      textAnchor="middle"
-                      fill={COLORS.text}
-                      style={{ fontFamily: 'Libre Franklin, sans-serif' }}
-                      fontSize="8"
-                    >
-                      {county}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Input Grid */}
-      <Card className="bg-white shadow-sm">
-        <CardHeader>
-          <CardTitle style={{ color: COLORS.text, fontFamily: 'Libre Franklin, sans-serif', fontWeight: 700 }}>
-            County Data Input
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="bg-[#0B132B] text-white font-bold">County</TableHead>
-                <TableHead className="bg-[#2889FF] text-white">Democratic</TableHead>
-                <TableHead className="bg-[#D1495B] text-white">Republican</TableHead>
-                <TableHead className="bg-[#63B893] text-white">Other</TableHead>
-                <TableHead className="bg-[#028090] text-white">Active Voters</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {countyData.map((county) => (
-                <TableRow key={county.county}>
-                  <TableCell className="font-bold text-[#0B132B]">{county.county}</TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={county.democratic}
-                      onChange={(e) => handleInputChange(county.county, 'democratic', e.target.value)}
-                      className="w-24"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={county.republican}
-                      onChange={(e) => handleInputChange(county.county, 'republican', e.target.value)}
-                      className="w-24"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={county.other}
-                      onChange={(e) => handleInputChange(county.county, 'other', e.target.value)}
-                      className="w-24"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={county.activeVoters}
-                      onChange={(e) => handleInputChange(county.county, 'activeVoters', e.target.value)}
-                      className="w-24"
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        /* Responsive design */
+        @media screen and (max-width: 768px) {
+            .stats-grid {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+              grid-template-rows: repeat(2, 1fr) !important;
+              gap: 10px !important;
+              width: 100% !important;
+              height: auto !important;
+              padding: 10px !important;
+              float: none !important;
+          }
+      
+          .stat-card {
+              width: 100% !important;
+              height: auto !important;
+              padding: 12px !important;
+              margin: 0 !important;
+          }
+            .map-box {
+                width: 100%;
+                height: 400px;
+                float: none;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <h1>Nevada Early Voting Statistics</h1>
     </div>
-  );
-};
 
-export default InteractiveDashboard;
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3 class="total-color">Total Early Votes</h3>
+            <div class="value total-color" id="total-votes">0</div>
+            <div class="total-color" id="total-percentage">0% of Active Voters</div>
+        </div>
+        <div class="stat-card">
+            <h3 class="dem-color">Democratic</h3>
+            <div class="value dem-color" id="dem-votes">0</div>
+            <div class="dem-color" id="dem-percentage">0% of Total</div>
+        </div>
+        <div class="stat-card">
+            <h3 class="rep-color">Republican</h3>
+            <div class="value rep-color" id="rep-votes">0</div>
+            <div class="rep-color" id="rep-percentage">0% of Total</div>
+        </div>
+        <div class="stat-card">
+            <h3 class="other-color">Other</h3>
+            <div class="value other-color" id="other-votes">0</div>
+            <div class="other-color" id="other-percentage">0% of Total</div>
+        </div>
+    </div>
+
+    <div class="map-box">
+        <div id="nevada-map"></div>
+    </div>
+
+    <div class="data-grid">
+        <table id="county-data">
+            <thead>
+                <tr>
+                    <th class="county-header">County</th>
+                    <th class="dem-header">Dem Votes</th>
+                    <th class="dem-header">Dem %</th>
+                    <th class="rep-header">Rep Votes</th>
+                    <th class="rep-header">Rep %</th>
+                    <th class="other-header">Other Votes</th>
+                    <th class="other-header">Other %</th>
+                    <th class="total-header">Total Votes</th>
+                    <th class="active-header">Active Voters</th>
+                    <th class="total-header">Turnout %</th>
+                </tr>
+            </thead>
+            <tbody id="county-tbody">
+                <!-- Will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const counties = [
+            'Carson City', 'Churchill', 'Clark', 'Douglas', 'Elko', 'Esmeralda',
+            'Eureka', 'Humboldt', 'Lander', 'Lincoln', 'Lyon', 'Mineral',
+            'Nye', 'Pershing', 'Storey', 'Washoe', 'White Pine'
+        ];
+
+        let countyData = {};
+
+        function initializeData() {
+            counties.forEach(county => {
+                countyData[county] = {
+                    democratic: 0,
+                    republican: 0,
+                    other: 0,
+                    activeVoters: 1000
+                };
+            });
+            updateDisplay();
+            populateTable();
+        }
+
+        function calculatePercentages(data) {
+            const total = data.democratic + data.republican + data.other;
+            return {
+                democratic: total === 0 ? 0 : (data.democratic / total * 100),
+                republican: total === 0 ? 0 : (data.republican / total * 100),
+                other: total === 0 ? 0 : (data.other / total * 100),
+                turnout: (total / data.activeVoters * 100)
+            };
+        }
+
+        function updateDisplay() {
+            const totals = Object.values(countyData).reduce((acc, county) => ({
+                democratic: acc.democratic + Number(county.democratic),
+                republican: acc.republican + Number(county.republican),
+                other: acc.other + Number(county.other),
+                activeVoters: acc.activeVoters + Number(county.activeVoters)
+            }), { democratic: 0, republican: 0, other: 0, activeVoters: 0 });
+
+            const totalVotes = totals.democratic + totals.republican + totals.other;
+            const percentages = calculatePercentages(totals);
+
+            // Update stat cards
+            document.getElementById('total-votes').textContent = totalVotes.toLocaleString();
+            document.getElementById('total-percentage').textContent = 
+                `${percentages.turnout.toFixed(1)}% of Active Voters`;
+
+            document.getElementById('dem-votes').textContent = totals.democratic.toLocaleString();
+            document.getElementById('dem-percentage').textContent = 
+                `${percentages.democratic.toFixed(1)}% of Total`;
+
+            document.getElementById('rep-votes').textContent = totals.republican.toLocaleString();
+            document.getElementById('rep-percentage').textContent = 
+                `${percentages.republican.toFixed(1)}% of Total`;
+
+            document.getElementById('other-votes').textContent = totals.other.toLocaleString();
+            document.getElementById('other-percentage').textContent = 
+                `${percentages.other.toFixed(1)}% of Total`;
+
+            updateMap();
+            populateTable(); // Refresh table to update percentages
+        }
+
+        function populateTable() {
+            const tbody = document.getElementById('county-tbody');
+            tbody.innerHTML = '';
+
+            counties.forEach(county => {
+                const data = countyData[county];
+                const percentages = calculatePercentages(data);
+                const total = data.democratic + data.republican + data.other;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="county-cell">${county}</td>
+                    <td class="dem-cell"><input type="number" value="${data.democratic}" 
+                        onchange="updateCountyData('${county}', 'democratic', this.value)"></td>
+                    <td class="dem-cell percentage">${percentages.democratic.toFixed(1)}%</td>
+                    <td class="rep-cell"><input type="number" value="${data.republican}"
+                        onchange="updateCountyData('${county}', 'republican', this.value)"></td>
+                    <td class="rep-cell percentage">${percentages.republican.toFixed(1)}%</td>
+                    <td class="other-cell"><input type="number" value="${data.other}"
+                        onchange="updateCountyData('${county}', 'other', this.value)"></td>
+                    <td class="other-cell percentage">${percentages.other.toFixed(1)}%</td>
+                    <td class="total-cell">${total.toLocaleString()}</td>
+                    <td class="total-cell"><input type="number" value="${data.activeVoters}"
+                        onchange="updateCountyData('${county}', 'activeVoters', this.value)"></td>
+                    <td class="total-cell">${percentages.turnout.toFixed(1)}%</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateCountyData(county, field, value) {
+            countyData[county][field] = Math.max(0, Number(value));
+            updateDisplay();
+        }
+
+        function updateMap() {
+            // Placeholder for map update logic
+            const mapDiv = document.getElementById('nevada-map');
+            mapDiv.innerHTML = 'Map visualization will go here';
+        }
+
+        // Initialize the dashboard
+        initializeData();
+    </script>
+</body>
+</html>
