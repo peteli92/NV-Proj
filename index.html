@@ -450,55 +450,9 @@
             'Eureka', 'Humboldt', 'Lander', 'Lincoln', 'Lyon', 'Mineral',
             'Nye', 'Pershing', 'Storey', 'Washoe', 'White Pine'
         ];
-        
+
         let countyData = {};
         const tooltip = d3.select('#county-tooltip');
-
-        function populateTable() {
-                const tbody = document.getElementById('county-tbody');
-                tbody.innerHTML = '';
-            
-                counties.forEach(county => {
-                    const data = countyData[county];
-                    const percentages = calculatePercentages(data);
-                    const total = data.democratic + data.republican + data.other;
-            
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="county-cell">${county}</td>
-                        <td class="dem-cell"><input type="number" value="${data.democratic}" 
-                            onchange="updateCountyData('${county}', 'democratic', this.value)"></td>
-                        <td class="dem-cell percentage">${percentages.democratic.toFixed(1)}%</td>
-                        <td class="rep-cell"><input type="number" value="${data.republican}"
-                            onchange="updateCountyData('${county}', 'republican', this.value)"></td>
-                        <td class="rep-cell percentage">${percentages.republican.toFixed(1)}%</td>
-                        <td class="other-cell"><input type="number" value="${data.other}"
-                            onchange="updateCountyData('${county}', 'other', this.value)"></td>
-                        <td class="other-cell percentage">${percentages.other.toFixed(1)}%</td>
-                        <td class="total-cell">${total.toLocaleString()}</td>
-                        <td class="total-cell"><input type="number" value="${data.activeVoters}"
-                            onchange="updateCountyData('${county}', 'activeVoters', this.value)"></td>
-                        <td class="total-cell">${percentages.turnout.toFixed(1)}%</td>
-                        <td class="county-cell">${county}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-    
-        function initializeData() {
-            counties.forEach(county => {
-                countyData[county] = {
-                    democratic: 0,
-                    republican: 0,
-                    other: 0,
-                    activeVoters: 1000,
-                    county: county
-                };
-            });
-            updateDisplay();
-            populateTable();
-            initializeMap();
-        }
         
         function calculatePercentages(data) {
             const total = data.democratic + data.republican + data.other;
@@ -509,7 +463,52 @@
                 turnout: (total / data.activeVoters * 100)
             };
         }
+
+        function getCountyColor(countyName) {
+            const county = countyData[countyName];
+            if (!county) return '#E8E8E8';
         
+            const demVotes = county.democratic;
+            const repVotes = county.republican;
+            
+            if (demVotes === 0 && repVotes === 0) return '#E8E8E8';
+            
+            const margin = Math.abs(demVotes - repVotes) / (demVotes + repVotes);
+            const intensity = Math.min(margin / 0.1, 1);
+            
+            return demVotes > repVotes 
+                ? d3.interpolateRgb('#FFFFFF', '#2889FF')(intensity)
+                : d3.interpolateRgb('#FFFFFF', '#D1495B')(intensity);
+        }
+
+        function getTooltipContent(data) {
+            const percentages = calculatePercentages(data);
+            const total = data.democratic + data.republican + data.other;
+            return `
+                <strong>${data.county}</strong>
+                <div class="stat-row dem-stat">
+                    <span>Dem:</span>
+                    <span>${data.democratic.toLocaleString()} (${percentages.democratic.toFixed(1)}%)</span>
+                </div>
+                <div class="stat-row rep-stat">
+                    <span>Rep:</span>
+                    <span>${data.republican.toLocaleString()} (${percentages.republican.toFixed(1)}%)</span>
+                </div>
+                <div class="stat-row other-stat">
+                    <span>Other:</span>
+                    <span>${data.other.toLocaleString()} (${percentages.other.toFixed(1)}%)</span>
+                </div>
+                <div class="stat-row total-stat">
+                    <span>Total:</span>
+                    <span>${total.toLocaleString()}</span>
+                </div>
+                <div class="stat-row total-stat">
+                    <span>Turnout:</span>
+                    <span>${percentages.turnout.toFixed(1)}%</span>
+                </div>
+            `;
+        }
+    
         function initializeMap() {
             const width = document.querySelector('.map-box').clientWidth;
             const height = document.querySelector('.map-box').clientHeight;
@@ -551,23 +550,6 @@
                 });
         }
         
-        function getCountyColor(countyName) {
-            const county = countyData[countyName];
-            if (!county) return '#E8E8E8';
-        
-            const demVotes = county.democratic;
-            const repVotes = county.republican;
-            
-            if (demVotes === 0 && repVotes === 0) return '#E8E8E8';
-            
-            const margin = Math.abs(demVotes - repVotes) / (demVotes + repVotes);
-            const intensity = Math.min(margin / 0.1, 1);
-            
-            return demVotes > repVotes 
-                ? d3.interpolateRgb('#FFFFFF', '#2889FF')(intensity)
-                : d3.interpolateRgb('#FFFFFF', '#D1495B')(intensity);
-        }
-        
         function updateDisplay() {
             const totals = Object.values(countyData).reduce((acc, county) => ({
                 democratic: acc.democratic + Number(county.democratic),
@@ -600,47 +582,66 @@
             initializeMap();
         }
         
+        function populateTable() {
+                const tbody = document.getElementById('county-tbody');
+                tbody.innerHTML = '';
+            
+                counties.forEach(county => {
+                    const data = countyData[county];
+                    const percentages = calculatePercentages(data);
+                    const total = data.democratic + data.republican + data.other;
+            
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="county-cell">${county}</td>
+                        <td class="dem-cell"><input type="number" value="${data.democratic}" 
+                            onchange="updateCountyData('${county}', 'democratic', this.value)"></td>
+                        <td class="dem-cell percentage">${percentages.democratic.toFixed(1)}%</td>
+                        <td class="rep-cell"><input type="number" value="${data.republican}"
+                            onchange="updateCountyData('${county}', 'republican', this.value)"></td>
+                        <td class="rep-cell percentage">${percentages.republican.toFixed(1)}%</td>
+                        <td class="other-cell"><input type="number" value="${data.other}"
+                            onchange="updateCountyData('${county}', 'other', this.value)"></td>
+                        <td class="other-cell percentage">${percentages.other.toFixed(1)}%</td>
+                        <td class="total-cell">${total.toLocaleString()}</td>
+                        <td class="total-cell"><input type="number" value="${data.activeVoters}"
+                            onchange="updateCountyData('${county}', 'activeVoters', this.value)"></td>
+                        <td class="total-cell">${percentages.turnout.toFixed(1)}%</td>
+                        <td class="county-cell">${county}</td>
+                    `;
+                    tbody.appendChild(row);
+            }
+    
         function updateCountyData(county, field, value) {
             countyData[county][field] = Math.max(0, Number(value));
             updateDisplay();
         }
-        
-        function getTooltipContent(data) {
-            const percentages = calculatePercentages(data);
-            const total = data.democratic + data.republican + data.other;
-            return `
-                <strong>${data.county}</strong>
-                <div class="stat-row dem-stat">
-                    <span>Dem:</span>
-                    <span>${data.democratic.toLocaleString()} (${percentages.democratic.toFixed(1)}%)</span>
-                </div>
-                <div class="stat-row rep-stat">
-                    <span>Rep:</span>
-                    <span>${data.republican.toLocaleString()} (${percentages.republican.toFixed(1)}%)</span>
-                </div>
-                <div class="stat-row other-stat">
-                    <span>Other:</span>
-                    <span>${data.other.toLocaleString()} (${percentages.other.toFixed(1)}%)</span>
-                </div>
-                <div class="stat-row total-stat">
-                    <span>Total:</span>
-                    <span>${total.toLocaleString()}</span>
-                </div>
-                <div class="stat-row total-stat">
-                    <span>Turnout:</span>
-                    <span>${percentages.turnout.toFixed(1)}%</span>
-                </div>
-            `;
+      
+        function initializeData() {
+            counties.forEach(county => {
+                countyData[county] = {
+                    democratic: 0,
+                    republican: 0,
+                    other: 0,
+                    activeVoters: 1000,
+                    county: county
+                };
+            });
+            updateDisplay();
+            populateTable();
+            initializeMap();
         }
     
     // Handle window resizing
-    window.addEventListener('resize', _.debounce(() => {
+        window.addEventListener('resize', _.debounce(() => {
         initializeMap();
-    }, 250));
-
-    // Initialize the dashboard
-    initializeData();
-   });
+        }, 250));
+    
+    // Initialize everything when the DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+        initializeData();
+    });
+            
 </script>
 </body>
 </html>
