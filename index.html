@@ -101,32 +101,34 @@
             box-sizing: border-box;
         }
 
-          .map-container {
+          .map-box {
             width: 75%;
-            height: 100%;
+            float: right;
+            height: 1000px; /* Adjusted to match the stats-grid height */
+            box-sizing: border-box;
+            padding: 20px;
             position: relative;
-            display: block;
-            border: none;
+            background: #FFFFFF;
         }
 
-        .map-box {
+        .map-container {
             width: 100%;
-            height: 850px; /* Increase height for better visibility */
-            margin: 0 auto; /* Center map container */
+            height: 100%;
             position: relative;
-            padding: 20px;
-            box-sizing: border-box;
+            background: none;
+            border: none;
+            display: block;
         }
 
         #nevada-map {
             width: 100%;
             height: 100%;
-            background: none;
+            background: #FFFFFF;
         }    
         
         .map-and-stats {
             overflow: hidden;  /* Creates new block formatting context */
-            margin-bottom: 5px; /* Adds space before charts */
+            margin-bottom: 30px; /* Adds space before charts */
         }
         
         .county {
